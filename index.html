@@ -1,0 +1,184 @@
+
+<!doctype html>
+<html lang="en" xmlns:ng="http://angularjs.org" id="ng-app" data-ng-app="app" xmlns="">
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Avalon user interface">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <title>Country code validation</title>
+
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css" />
+
+    <link href='http://fonts.googleapis.com/css?family=Dosis:200,300,400,500,600,700,800' rel='stylesheet'
+          type='text/css'>
+
+
+    <link rel="stylesheet" href="css/colours.css">
+    <link rel="stylesheet" href="css/fontIcons.css">
+    <link rel="stylesheet" href="css/general.css">
+
+
+
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="landingSite container" data-ng-controller="validationController">
+    <h1>Mobile phone validator</h1>
+
+
+    <div class="form-inline">
+        <div class="form-group">
+            <select class="form-control" ng-model="countryCode"
+                data-ng-options="item.dialCode as item.name for item in countryCodes"></select>
+        </div>
+        <div class="form-group">
+            <input class="form-control" type="text" data-ng-model="msisdn" placeholder="msisdn"
+               ng-blur="validateNumber(countryCode,msisdn)"/>
+        </div>
+        <!--<button type="submit" data-ng-click="validateNumber(countryCode,msisdn)">check</button>-->
+    </div>
+    <div data-ng-if="!errorMessageInvalid && !errorMessageLength"><h3>{{countryCodeFormatted}} {{msisdn}}</h3></div>
+    <div data-ng-if="errorMessageInvalid && !errorMessageLength" class="red"><h4>{{errorMessageInvalidText}}</h4></div>
+    <div data-ng-if="!errorMessageInvalid && errorMessageLength" class="red"><h4>{{errorMessageLengthText}}</h4></div>
+
+
+
+    <hr>
+    <p>The purpose of this function is to check that the number being input is a valid MSISDN number for the
+        country, and will also, if the information is available, format the number to the recognised format for that
+        country.</p>
+    <p>It will strip white space from numbers if/when they are put in.  This is done as
+        people will sometimes put in the spaces automatically, but will be placed back in, or corrected, if the
+        msisdnFormat has been populated for that country
+        .</p>
+    <p> A leading '0' is also removed when a user may place this in automatically.  For instance in the UK
+        when dialling from within the country the user will dial: 07795 for the code, however international dialing
+        requires this to be removed and it will become +44 7795</p>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Dependancies</div>
+        <div class="panel-body">
+            <p>This function is including the following dependancies:</p>
+            <ul>
+                <li>js/filters.js  - this is where all the cool action happens</li>
+                <li>js/app.js  - Usual module, includes the call to the countryCodeService to load the countries</li>
+                <li>js/services/countryCodeService.js</li>
+                    <ul>
+                        <li>The services to get the codes from the JSON file and 2
+                    functions to sort the list by country code descending (required for the country code validation)
+                and by displayFirst Ascending followed by Alphabetically (currently used for the select order)</li>
+                        </ul>
+
+                <li>js/controllers/gsmController.js  - this gives you the basic working on how to call the filter</li>
+                <li>js/countryCodes.json  - this is the file which contains all of the country codes and the
+                    workings. See extra panel for full details on how this file works</li>
+                <li>js/directives.js - ngBlur allows the onBlur() function to work on form inputs etc.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Country code file</div>
+        <div class="panel-body">
+            <p>Detailed information on the country code file:</p>
+            <ul>
+                <li>You can either put it into a seperate API call or do as I have here and reference to
+                    it directly.</li>
+                <li>It is editable and can be updated manually to show more or less countries at the top of the
+                    list. Change the order of the list, and set countries inactive (not to show) etc.</li>
+                <li>The information obtained in the current list was from Wikipedia and may need checking against
+                    for potential changes or adding further countries information.</li>
+            </ul>
+
+            <table class="table table-responsive table-striped">
+                <thead>
+                    <td width="30%">Variable name</td>
+                    <td width="70%">required values</td>
+                </thead>
+                <tbody>
+                <tr>
+                    <td width="30%">name</td>
+                    <td width="70%">The full name of the country. Currently used for display on the select options</td>
+                </tr>
+                <tr>
+                    <td>dialCode</td>
+                    <td>The international dialing code of the country WIHTOUT the '+'.  If you include a new
+                        country the '+' is not required</td>
+                </tr>
+                <tr>
+                    <td>code</td>
+                    <td>Country short code.  Can be used instead of full name perhaps for the select options</td>
+                </tr>
+                <tr>
+                    <td>prefixNo</td>
+                    <td>An integer value of how many characters at the start of an msisdn needs checking against.
+                        I.E: Norway is 1, Poland is 2</td>
+                </tr>
+                <tr>
+                    <td>prefixVal</td>
+                    <td>A comma seperated list of special numbers used by certain countries to define that the
+                        number is specifically a mobile/cell number.  This can be 1, 2 or more numbers. I.e: Norway
+                        is 4,9; Poland is 50,51,53,57,60,66,...  You can be very specific as required and update this
+                        list if and when required</td>
+                </tr>
+                <tr>
+                    <td>msisdnCount</td>
+                    <td>The amount of characters expected to validate it as a mobile number or how many characters
+                        there are for that country.  I.E: Norway is 9, UK is 10</td>
+                </tr>
+                <tr>
+                    <td>displayFirst</td>
+                    <td>If you want specific countries at the top of the country select list define them here by
+                        numbering them from importance ascending (1-10). Label all the other countries that you wish to
+                        be displayed alphabetically as 999.</td>
+                </tr>
+                <tr>
+                    <td>active</td>
+                    <td>Sets that country should be shown in the list</td>
+                </tr>
+                <tr>
+                    <td>validation</td>
+                    <td>You require this country to be validated in the filter with prefix checking and msisdn
+                        count</td>
+                </tr>
+                <tr>
+                    <td>msisdnFormat</td>
+                    <td><p>A comma separated list so that you can format the number to display as that country displays
+                        . IE: Norway is 3,2,3 - 3 numbers, space, 2 numbers, space, 3 numbers; UK is 4 -  4
+                        numbers, rest of numbers</p> <p>NB: United States has been hard coded
+                        in,
+                        along with US colony countries which
+                        have
+                        country code of 4</p></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular.min.js"></script>
+
+<script src="js/lib/ui-bootstrap-tpls.js"></script>
+
+
+<script src="js/app.js"></script>
+<script src="js/filters.js"></script>
+
+<script src="js/services/countryCodeService.js"></script>
+
+<script src="js/directives/directives.js"></script>
+
+<script src="js/controllers/validationController.js"></script>
+
+</html>
